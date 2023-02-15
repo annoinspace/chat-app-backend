@@ -1,4 +1,5 @@
 let onlineUsers = []
+let typingUsers = []
 export const newConnectionHandler = (newClient) => {
   console.log("NEW CONNECTION -----", newClient.id)
 
@@ -18,6 +19,23 @@ export const newConnectionHandler = (newClient) => {
   //  send the whole chat history
   // newClient.emit("chatHistory", chatHistory)
 
+  // newClient.on("typing", () => {
+  //   // to emit the "typing" event with a payload of "username" and "typingUsers" array
+  //   const user = onlineUsers.find((user) => user.socketId === newClient.id)
+  //   console.log("user that is typing", user)
+  //   typingUsers.push(user.username)
+  //   newClient.broadcast.emit("typing", { username: user.username, typingUsers })
+  // })
+  newClient.on("typing", (payload) => {
+    typingUsers.push(payload.username)
+    newClient.broadcast.emit("typing", typingUsers)
+    console.log("user that is typing", typingUsers)
+
+    setTimeout(() => {
+      typingUsers = typingUsers.filter((user) => user !== payload.username)
+      newClient.broadcast.emit("typing", typingUsers)
+    }, 3000)
+  })
   newClient.on("sendMessage", (message) => {
     console.log("NEW MESSAGE:", message)
     // 3.1 Whenever we receive that new message we have to propagate that message to everybody but not sender
